@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Matematik Düellosu</title>
+  <style>
+    :root{
+      --accent:#ffdd57;
+      --accent-2:#ffd028;
+      --bg1:#74ebd5;
+      --bg2:#acb6e5;
+      --card-bg:#fff;
+      --shadow:rgba(0,0,0,0.18);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(90deg,var(--bg1),var(--bg2));
+    }
+
+    .screen{display:none;flex-direction:column;align-items:center;gap:16px;}
+    .screen.active{display:flex}
+
+    h1{margin:0;color:#222;text-shadow:1px 1px 2px rgba(255,255,255,0.5)}
+    .btn{background:var(--accent);border:none;padding:10px 18px;border-radius:10px;font-size:16px;cursor:pointer}
+    .btn:hover{background:var(--accent-2);transform:scale(1.03)}
+    .muted{color:#555;font-size:14px}
+
+    /* oyun ekranı */
+    #gameScreen{
+      width:100%;
+      height:100vh;
+      position:relative;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .game-area{
+      position:absolute;
+      bottom:20px;
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      padding:0 40px;
+    }
+
+    .player{
+      width:250px;
+      height:350px;
+      background:var(--card-bg);
+      border-radius:16px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      align-items:center;
+      box-shadow:0 8px 20px var(--shadow);
+    }
+
+    .hearts{font-size:20px}
+    .problem{font-size:26px;font-weight:700;color:#222}
+    .answers{display:flex;gap:8px}
+    .answers button{padding:6px 10px;border-radius:8px;border:none;cursor:pointer;background:var(--accent)}
+
+    /* işlem seçimi stilleri kısaltıldı */
+    .op-row{width:260px;background:#fff;border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 6px 18px var(--shadow);cursor:pointer}
+    .check-box{width:28px;height:28px;border-radius:6px;border:2px solid #d1d1d1;display:flex;align-items:center;justify-content:center}
+    .check-box.selected{background:linear-gradient(180deg,var(--accent),var(--accent-2));border-color:transparent}
+  </style>
+</head>
+<body>
+
+  <!-- Başlangıç -->
+  <div id="startScreen" class="screen active">
+    <h1>Matematik Düellosu</h1>
+    <div class="muted">2 kişilik — Sağ ve Sol tarafta oyuncular</div>
+    <button class="btn" onclick="showOpScreen()">Başla</button>
+  </div>
+
+  <!-- İşlem seçme -->
+  <div id="opScreen" class="screen">
+    <h1>İşlem Seçimi</h1>
+    <div class="muted">İstediğin kadar işlemi seçebilirsin.</div>
+    <div style="margin-top:10px">
+      <div class="op-row" onclick="toggleOp('+')"><div class="check-box" id="boxPlus">+</div> Toplama</div>
+      <div class="op-row" onclick="toggleOp('-')"><div class="check-box" id="boxMinus">−</div> Çıkarma</div>
+      <div class="op-row" onclick="toggleOp('×')"><div class="check-box" id="boxMul">×</div> Çarpma</div>
+      <div class="op-row" onclick="toggleOp('÷')"><div class="check-box" id="boxDiv">÷</div> Bölme</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px">
+      <button class="btn" onclick="selectAll()">Hepsini Seç</button>
+      <button class="btn" onclick="clearAll()">Temizle</button>
+      <button class="btn" onclick="confirmOps()">Onayla</button>
+    </div>
+  </div>
+
+  <!-- Oyun ekranı -->
+  <div id="gameScreen" style="display:none;">
+    <div class="game-area">
+      <div class="player" id="player1">
+        <div class="hearts" id="hearts1">❤️❤️❤️</div>
+        <div class="problem" id="problem1"></div>
+        <div class="answers" id="answers1"></div>
+      </div>
+
+      <div class="player" id="player2">
+        <div class="hearts" id="hearts2">❤️❤️❤️</div>
+        <div class="problem" id="problem2"></div>
+        <div class="answers" id="answers2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sonuç -->
+  <div id="resultScreen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+    <div style="background:#111;color:#fff;padding:22px;border-radius:12px;text-align:center">
+      <h2>Oyun Bitti!</h2>
+      <div id="score1"></div>
+      <div id="score2"></div>
+      <button class="btn" onclick="location.reload()">Tekrar Oyna</button>
+    </div>
+  </div>
+
+  <script>
+    let selectedOps=new Set(['×']);
+    let hearts1=3, hearts2=3, correct1=0, wrong1=0, correct2=0, wrong2=0;
+
+    function showOpScreen(){
+      document.getElementById('startScreen').classList.remove('active');
+      document.getElementById('opScreen').classList.add('active');
+      refreshCheckboxes();
+    }
+
+    function confirmOps(){
+      if(selectedOps.size===0){alert('En az bir işlem seçin');return;}
+      document.getElementById('opScreen').classList.remove('active');
+      document.getElementById('gameScreen').style.display='block';
+      startGame();
+    }
+
+    function toggleOp(op){selectedOps.has(op)?selectedOps.delete(op):selectedOps.add(op);refreshCheckboxes();}
+    function selectAll(){['+','-','×','÷'].forEach(o=>selectedOps.add(o));refreshCheckboxes();}
+    function clearAll(){selectedOps.clear();refreshCheckboxes();}
+    function refreshCheckboxes(){['+','-','×','÷'].forEach(o=>{document.getElementById('box'+(o==='+'?'Plus':o==='-'?'Minus':o==='×'?'Mul':'Div')).classList.toggle('selected',selectedOps.has(o));});}
+
+    function randomProblem(){
+      const ops=Array.from(selectedOps);
+      const op=ops[Math.floor(Math.random()*ops.length)];
+      let a,b,text,result;
+      switch(op){
+        case '+':a=Math.floor(Math.random()*20);b=Math.floor(Math.random()*20);text=`${a}+${b}`;result=a+b;break;
+        case '-':a=Math.floor(Math.random()*20);b=Math.floor(Math.random()*20);text=`${a}-${b}`;result=a-b;break;
+        case '×':a=Math.floor(Math.random()*12);b=Math.floor(Math.random()*12);text=`${a}×${b}`;result=a*b;break;
+        case '÷':b=Math.floor(Math.random()*11)+1;result=Math.floor(Math.random()*12);a=result*b;text=`${a}÷${b}`;break;
+      }
+      return {text,result};
+    }
+
+    function newQuestion(player){
+      const p=randomProblem();
+      document.getElementById('problem'+player).innerText=p.text;
+      const c=document.getElementById('answers'+player);
+      c.innerHTML='';
+      let answers=[p.result];
+      while(answers.length<3){let fake=p.result+(Math.floor(Math.random()*11)-5);if(!answers.includes(fake))answers.push(fake);}
+      answers.sort(()=>Math.random()-0.5);
+      answers.forEach(ans=>{
+        const btn=document.createElement('button');
+        btn.innerText=ans;
+        btn.onclick=()=>{if(ans===p.result){if(player===1)correct1++;else correct2++;}else{if(player===1){wrong1++;hearts1--;}else{wrong2++;hearts2--;}}updateHearts();if(hearts1<=0||hearts2<=0||correct1>=10||correct2>=10)endGame();else newQuestion(player);}
+        c.appendChild(btn);
+      });
+    }
+
+    function updateHearts(){
+      document.getElementById('hearts1').innerText='❤️'.repeat(Math.max(0,hearts1));
+      document.getElementById('hearts2').innerText='❤️'.repeat(Math.max(0,hearts2));
+    }
+
+    function startGame(){hearts1=3;hearts2=3;correct1=0;wrong1=0;correct2=0;wrong2=0;updateHearts();newQuestion(1);newQuestion(2);}
+    function endGame(){document.getElementById('score1').innerText=`Oyuncu 1 → ✅ ${correct1} ❌ ${wrong1}`;document.getElementById('score2').innerText=`Oyuncu 2 → ✅ ${correct2} ❌ ${wrong2}`;document.getElementById('resultScreen').style.display='flex';}
+  </script>
+</body>
+</html>
+
+
+

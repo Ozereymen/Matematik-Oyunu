@@ -1,0 +1,22 @@
+.game-area {
+  display: flex;
+  justify-content: space-between;  /* iki oyuncuyu kenarlara yaslar */
+  align-items: flex-end;           /* alt köşeye yaslar */
+  width: 100%;
+  max-width: 920px;
+  padding: 0 20px;
+}
+
+
+.player {
+  width: 250px;       /* genişliği artırdık */
+  height: 350px;      /* yüksekliği artırdık */
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8px 20px var(--shadow);
+}
