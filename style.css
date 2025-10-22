@@ -1,22 +1,129 @@
-.game-area {
-  display: flex;
-  justify-content: space-between;  /* iki oyuncuyu kenarlara yaslar */
-  align-items: flex-end;           /* alt köşeye yaslar */
-  width: 100%;
-  max-width: 920px;
-  padding: 0 20px;
-}
+    :root{
+      --accent:#ffdd57;
+      --accent-2:#ffd028;
+      --bg1:#74ebd5;
+      --bg2:#acb6e5;
+      --card-bg:#fff;
+      --shadow:rgba(0,0,0,0.18);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(90deg,var(--bg1),var(--bg2));
+    }
 
+    .screen{display:none;flex-direction:column;align-items:center;gap:16px;}
+    .screen.active{display:flex}
 
-.player {
-  width: 250px;       /* genişliği artırdık */
-  height: 350px;      /* yüksekliği artırdık */
-  background: var(--card-bg);
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 8px 20px var(--shadow);
-}
+    h1{margin:0;color:#222;text-shadow:1px 1px 2px rgba(255,255,255,0.5)}
+    .btn{background:var(--accent);border:none;padding:10px 18px;border-radius:10px;font-size:16px;cursor:pointer}
+    .btn:hover{background:var(--accent-2);transform:scale(1.03)}
+    .muted{color:#555;font-size:14px}
+
+    /* oyun ekranı */
+    #gameScreen{
+      width:100%;
+      height:100vh;
+      position:relative;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+    }
+
+    /* Büyük ve ortada süre */
+    #timer {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 80px; /* biraz küçülttüm ki butonlara engel olmasın */
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+      z-index: 1;
+    }
+
+    .game-area{
+      position:absolute;
+      bottom:20px;
+      width:100%;
+      display:flex;
+      justify-content:space-around;
+      padding:0 40px;
+      z-index:1;
+    }
+
+    .player{
+      width:260px;
+      height:360px;
+      background:var(--card-bg);
+      border-radius:16px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      align-items:center;
+      box-shadow:0 8px 20px var(--shadow);
+    }
+
+    .hearts{font-size:20px}
+    .problem{font-size:28px;font-weight:700;color:#222}
+    .answers{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+    .answers button{
+      padding:10px 20px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      background:var(--accent);
+      font-size:18px;
+      z-index:2; /* tıklanabilir olması için */
+    }
+
+    /* işlem seçimi stilleri */
+    .op-row{
+      width:260px;
+      background:#fff;
+      border-radius:12px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow:0 6px 18px var(--shadow);
+      cursor:pointer
+    }
+    .check-box{
+      width:28px;
+      height:28px;
+      border-radius:6px;
+      border:2px solid #d1d1d1;
+      display:flex;
+      align-items:center;
+      justify-content:center
+    }
+    .check-box.selected{
+      background:linear-gradient(180deg,var(--accent),var(--accent-2));
+      border-color:transparent
+    }
+
+    /* Geri sayım yazısı */
+    #countdown {
+      display:none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-size: 120px;
+      font-weight: bold;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }

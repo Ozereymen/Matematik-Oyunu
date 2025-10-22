@@ -1,57 +1,121 @@
-let gameOver = false;
-answers.forEach(ans => {
-  const btn = document.createElement('button');
-  btn.innerText = ans;
-  btn.onclick = () => {
-    if(gameOver) return; // oyun bitti, işlem yok
+let selectedOps=new Set(['×']);
+    let hearts=[3,3,3], correct=[0,0,0], wrong=[0,0,0];
+    let timer=90;
+    let countdownValue=5;
+    let countdownInterval;
+    let gameInterval;
+    let currentProblem;
 
-    if(ans === p.result){
-      if(player === 1) correct1++; else correct2++;
-      if(correct1 >= 10 || correct2 >= 10){
-        endGame();
-        return;
+    function showOpScreen(){
+      document.getElementById('startScreen').classList.remove('active');
+      document.getElementById('opScreen').classList.add('active');
+      refreshCheckboxes();
+    }
+
+    function confirmOps(){
+      if(selectedOps.size===0){alert('En az bir işlem seçin');return;}
+      document.getElementById('opScreen').classList.remove('active');
+      showCountdown();
+    }
+
+    function showCountdown(){
+      const cd=document.getElementById('countdown');
+      cd.style.display='flex';
+      countdownValue=5;
+      cd.innerText=countdownValue;
+      countdownInterval=setInterval(()=>{
+        countdownValue--;
+        if(countdownValue>0){
+          cd.innerText=countdownValue;
+        } else {
+          clearInterval(countdownInterval);
+          cd.style.display='none';
+          document.getElementById('gameScreen').style.display='block';
+          startGame();
+        }
+      },1000);
+    }
+
+    function toggleOp(op){selectedOps.has(op)?selectedOps.delete(op):selectedOps.add(op);refreshCheckboxes();}
+    function selectAll(){['+','-','×','÷'].forEach(o=>selectedOps.add(o));refreshCheckboxes();}
+    function clearAll(){selectedOps.clear();refreshCheckboxes();}
+    function refreshCheckboxes(){['+','-','×','÷'].forEach(o=>{document.getElementById('box'+(o==='+'?'Plus':o==='-'?'Minus':o==='×'?'Mul':'Div')).classList.toggle('selected',selectedOps.has(o));});}
+
+    function randomProblem(){
+      const ops=Array.from(selectedOps);
+      const op=ops[Math.floor(Math.random()*ops.length)];
+      let a,b,text,result;
+      switch(op){
+        case '+':a=Math.floor(Math.random()*20);b=Math.floor(Math.random()*20);text=`${a}+${b}`;result=a+b;break;
+        case '-':a=Math.floor(Math.random()*20);b=Math.floor(Math.random()*20);text=`${a}-${b}`;result=a-b;break;
+        case '×':a=Math.floor(Math.random()*12);b=Math.floor(Math.random()*12);text=`${a}×${b}`;result=a*b;break;
+        case '÷':b=Math.floor(Math.random()*11)+1;result=Math.floor(Math.random()*12);a=result*b;text=`${a}÷${b}`;break;
       }
-    } else {
-      if(player === 1) wrong1++; else wrong2++;
-      if(player === 1) hearts1--; else hearts2--;
-      updateHearts();
-      if(hearts1 <= 0 || hearts2 <= 0){
-        endGame();
-        return;
+      return {text,result};
+    }
+
+    function newQuestionAllPlayers(){
+      currentProblem = randomProblem();
+      for(let i=1;i<=3;i++){
+        document.getElementById('problem'+i).innerText = currentProblem.text;
+        const c = document.getElementById('answers'+i);
+        c.innerHTML = '';
+        let answers=[currentProblem.result];
+        while(answers.length<3){let fake=currentProblem.result+(Math.floor(Math.random()*11)-5);if(!answers.includes(fake))answers.push(fake);}
+        answers.sort(()=>Math.random()-0.5);
+        answers.forEach(ans=>{
+          const btn=document.createElement('button');
+          btn.innerText=ans;
+          btn.onclick=()=>{
+            if(ans===currentProblem.result){
+              correct[i-1]++;
+            }else{
+              wrong[i-1]++;
+              hearts[i-1]--;
+            }
+            updateHearts();
+            if(hearts.some(h=>h<=0)||timer<=0) endGame();
+            else newQuestionAllPlayers();
+          }
+          c.appendChild(btn);
+        });
       }
     }
 
-    // Sadece oyun devam ediyorsa yeni soruya geç
-    if(!gameOver) newQuestion(player);
-  };
-  container.appendChild(btn);
-});
-function endGame(){
-  gameOver = true; // artık oyun bitti
-  clearInterval(timerInterval);
+    function updateHearts(){
+      for(let i=1;i<=3;i++){
+        document.getElementById('hearts'+i).innerText='❤️'.repeat(Math.max(0,hearts[i-1]));
+      }
+    }
 
-  // tüm cevap butonlarını devre dışı bırak
-  document.querySelectorAll('.answers button').forEach(b => b.disabled = true);
+    function startGame(){
+      hearts=[3,3,3];
+      correct=[0,0,0];
+      wrong=[0,0,0];
+      timer=90;
+      updateHearts();
+      document.getElementById('timer').style.display='flex';
+      newQuestionAllPlayers();
+      updateTimer();
+      gameInterval=setInterval(()=>{
+        timer--;
+        updateTimer();
+        if(timer<=0){
+          clearInterval(gameInterval);
+          endGame();
+        }
+      },1000);
+    }
 
-  let winner = '';
-  if(correct1 >= 10) winner = 'Grup 1 Kazandı! 🎉';
-  else if(correct2 >= 10) winner = 'Grup 2 Kazandı! 🎉';
-  else winner = 'Oyun Bitti!';
+    function updateTimer(){
+      const timerEl = document.getElementById('timer');
+      timerEl.innerText = timer;
+    }
 
-  document.getElementById('score1').innerText = `Grup 1 → Doğru: ${correct1}  Yanlış: ${wrong1}`;
-  document.getElementById('score2').innerText = `Grup 2 → Doğru: ${correct2}  Yanlış: ${wrong2}`;
-  document.getElementById('resultScreen').style.display = 'flex';
-  document.querySelector('#resultScreen h2').innerText = winner;
-}
-// Oyun değişkenleri
-function startGame(){
-  
-  hearts1=3; hearts2=3; correct1=0; wrong1=0; correct2=0; wrong2=0;
-  updateHearts();
-  document.getElementById('timeVal').innerText = timer;
-  newQuestion(1); 
-  newQuestion(2);
-  
-  if(timerInterval) clearInterval(timerInterval);
-  
-}
+    function endGame(){
+      clearInterval(gameInterval);
+      document.getElementById('score1').innerText=`Oyuncu 1 → ✅ ${correct[0]} ❌ ${wrong[0]}`;
+      document.getElementById('score2').innerText=`Oyuncu 2 → ✅ ${correct[1]} ❌ ${wrong[1]}`;
+      document.getElementById('score3').innerText=`Oyuncu 3 → ✅ ${correct[2]} ❌ ${wrong[2]}`;
+      document.getElementById('resultScreen').style.display='flex';
+    }

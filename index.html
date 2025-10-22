@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Matematik Oyunu</title>
+ <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- Başlangıç -->
+  <div id="startScreen" class="screen active">
+    <h1><!-- oyuna isim buraya gelecek --></h1>
+    <div class="muted">3 kişilik — Sol, Orta ve Sağ tarafta oyuncular</div>
+    <button class="btn" onclick="showOpScreen()">Başla</button>
+  </div>
+
+  <!-- İşlem seçme -->
+  <div id="opScreen" class="screen">
+    <h1>İşlem Seçimi</h1>
+    <div class="muted">İstediğin kadar işlemi seçebilirsin.</div>
+    <div style="margin-top:10px">
+      <div class="op-row" onclick="toggleOp('+')"><div class="check-box" id="boxPlus">+</div> Toplama</div>
+      <div class="op-row" onclick="toggleOp('-')"><div class="check-box" id="boxMinus">−</div> Çıkarma</div>
+      <div class="op-row" onclick="toggleOp('×')"><div class="check-box" id="boxMul">×</div> Çarpma</div>
+      <div class="op-row" onclick="toggleOp('÷')"><div class="check-box" id="boxDiv">÷</div> Bölme</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px">
+      <button class="btn" onclick="selectAll()">Hepsini Seç</button>
+      <button class="btn" onclick="clearAll()">Temizle</button>
+      <button class="btn" onclick="confirmOps()">Onayla</button>
+    </div>
+  </div>
+
+  <!-- Geri sayım -->
+  <div id="countdown" class="screen">5</div>
+
+  <!-- Oyun ekranı -->
+  <div id="gameScreen" style="display:none;">
+    <div id="timer">90</div>
+    <div class="game-area">
+      <div class="player" id="player1">
+        <div class="hearts" id="hearts1">❤️❤️❤️</div>
+        <div class="problem" id="problem1"></div>
+        <div class="answers" id="answers1"></div>
+      </div>
+
+      <div class="player" id="player2">
+        <div class="hearts" id="hearts2">❤️❤️❤️</div>
+        <div class="problem" id="problem2"></div>
+        <div class="answers" id="answers2"></div>
+      </div>
+
+      <div class="player" id="player3">
+        <div class="hearts" id="hearts3">❤️❤️❤️</div>
+        <div class="problem" id="problem3"></div>
+        <div class="answers" id="answers3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sonuç -->
+  <div id="resultScreen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+    <div style="background:#111;color:#fff;padding:22px;border-radius:12px;text-align:center">
+      <h2>Oyun Bitti!</h2>
+      <div id="score1"></div>
+      <div id="score2"></div>
+      <div id="score3"></div>
+      <button class="btn" onclick="location.reload()">Tekrar Oyna</button>
+    </div>
+  </div>
+<script src="./script.js"></script>
+</body>
+</html>
